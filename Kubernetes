@@ -1,0 +1,95 @@
+Kubernetes Work Summary
+
+Kubernetes Resources
+
+1. Deployment for Rental Manager Microservice
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rentalmanager-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: rentalmanager
+  template:
+    metadata:
+      labels:
+        app: rentalmanager
+    spec:
+      containers:
+      - name: rentalmanager
+        image: sasankreddy18/vehiclemanagementsystem:rental_service_latest
+        ports:
+        - containerPort: 8081
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: "prod"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rentalmanager-service
+spec:
+  selector:
+    app: rentalmanager
+  ports:
+    - protocol: TCP
+      port: 8081
+      targetPort: 8081
+  type: LoadBalancer
+
+4. Deployment for MySQL Database
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - name: mysql
+        image: mysql:latest
+        ports:
+        - containerPort: 3306
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: rootpassword
+        - name: MYSQL_DATABASE
+          value: mydatabase
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-service
+spec:
+  selector:
+    app: mysql
+  ports:
+    - protocol: TCP
+      port: 3306
+      targetPort: 3306
+  type: ClusterIP
+Kubernetes Commands
+Apply Kubernetes Configurations
+
+sh
+kubectl apply -f rentalmanager-deployment.yaml
+kubectl apply -f maintenancemanager-deployment.yaml
+kubectl apply -f vehiclemanager-deployment.yaml
+kubectl apply -f mysql-deployment.yaml
+Check the Status of Deployments
+
+sh
+kubectl get deployments
+kubectl get services
+kubectl get pods
