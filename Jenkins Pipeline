@@ -1,0 +1,86 @@
+Wanna try my application? Just ensure you have all the prerequisites (Java , Docker , SQL) installed , and let my Jenkins pipeline take care of the rest! 
+
+The pipeline is designed to simplify the setup process by automatically handling the installation and deployment of all necessary components in your local environment.
+From pulling the latest Docker images to setting up the Docker network and deploying the microservices, my pipeline covers it all. With just a few commands, you'll have everything up and running in no time.
+
+Enjoy seamless integration and deployment with minimal effort!
+
+PIPELINE :
+
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_HUB_REPO = 'sasankreddy18'
+        DOCKER_NETWORK = 'my_network'
+    }
+
+    stages {
+        stage('Pull Docker Images') {
+            steps {
+                script {
+                    sh "docker pull ${DOCKER_HUB_REPO}/vehiclemanagementsystem:vehicle"
+                    sh "docker pull ${DOCKER_HUB_REPO}/vehiclemanagementsystem:rental_service_latest"
+                    sh "docker pull ${DOCKER_HUB_REPO}/vehiclemanagementsystem:maintenance_2.O"
+                    sh "docker pull mysql:latest"
+                }
+            }
+        }
+
+        stage('Create Docker Network') {
+            steps {
+                script {
+                    sh "docker network create ${DOCKER_NETWORK}"
+                }
+            }
+        }
+
+        stage('Deploy Containers') {
+            steps {
+                script {
+                    sh """
+                    docker run -d --name mysql-db \
+                        --network ${DOCKER_NETWORK} \
+                        -e MYSQL_ROOT_PASSWORD=rootpassword \
+                        -e MYSQL_DATABASE=mydatabase \
+                        mysql:latest
+                    """
+                    
+                    sh """
+                    docker run -d --name rentalmanager \
+                        --network ${DOCKER_NETWORK} \
+                        -p 8081:8081 \
+                        ${DOCKER_HUB_REPO}/rentalmanager:latest
+                    """
+                    sh """
+                    docker run -d --name maintenancemanager \
+                        --network ${DOCKER_NETWORK} \
+                        -p 8082:8082 \
+                        ${DOCKER_HUB_REPO}/maintenancemanager:latest
+                    """
+                    sh """
+                    docker run -d --name usermanager \
+                        --network ${DOCKER_NETWORK} \
+                        -p 8083:8083 \
+                        ${DOCKER_HUB_REPO}/usermanager:latest
+                    """
+                }
+            }
+        }
+
+        stage('Verify Deployment') {
+            steps {
+                script {
+                    sh "docker ps"
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            sh "docker network rm ${DOCKER_NETWORK} || true"
+            sh "docker rm -f rentalmanager maintenancemanager usermanager mysql-db || true"
+        }
+    }
+}
