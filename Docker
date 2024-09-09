@@ -1,0 +1,36 @@
+Docker Work Summary
+
+Docker Images
+Here are the Docker images available in my Docker Hub repository:
+
+Rental Service
+Image: sasankreddy18/vehiclemanagementsystem:rental_service_latest
+Description: This image contains the latest version of the rental service microservice, responsible for managing vehicle rentals.
+
+Vehicle Manager
+Image: sasankreddy18/vehiclemanagementsystem:vehicle
+Description: This image includes the vehicle manager microservice, handling vehicle registrations and details.
+
+Maintenance Manager
+Image: sasankreddy18/vehiclemanagementsystem:maintenance_2.O
+Description: This image features the maintenance manager microservice, tracking maintenance and fuel expenses for vehicles.
+
+Dockerfile Examples
+1. Dockerfile for Rental Manager Microservice
+
+Dockerfile
+
+# Use a base image with OpenJDK
+FROM openjdk:17-jdk-alpine
+
+# Set the working directory inside the container
+WORKDIR /app
+
+# Copy the JAR file into the container
+COPY target/rentalmanager.jar /app/rentalmanager.jar
+
+# Expose the port the app runs on
+EXPOSE 8081
+
+# Command to run the JAR file
+ENTRYPOINT ["java", "-jar", "/app/rentalmanager.jar"]
